@@ -1,0 +1,25 @@
+{
+  "name": "define-utility",
+  "version": "0.1.0",
+  "description": "Improved syntax for defining special properties on javascript objects.",
+  "main": "lib",
+  "devDependencies": {
+    "babel-eslint": "^7.0.0",
+    "babel-preset-es2015-node": "^6.1.1",
+    "babel-preset-stage-0": "^6.16.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "define",
+    "property",
+    "access",
+    "get",
+    "set",
+    "const",
+    "let"
+  ],
+  "author": "Ben Gaumond",
+  "license": "ISC"
+}
