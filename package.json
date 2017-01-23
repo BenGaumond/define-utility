@@ -19,7 +19,7 @@
   "scripts": {
     "build": "node_modules/.bin/babel src --out-dir lib",
     "test": "node_modules/.bin/mocha --compilers js:babel-core/register 'test/**/*.js'",
-    "publish": "npm run test && npm run build && npm publish"
+    "publish": "npm run test && npm run build"
   },
   "keywords": [
     "define",
