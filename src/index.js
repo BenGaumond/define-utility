@@ -6,31 +6,68 @@ const { defineProperty, freeze } = Object
 
 const writable = true, configurable = true, enumerable = true
 
-const INSTANCE_TARGET = Symbol()
-
 let STATIC = null, STATIC_TARGET = null
 
 /******************************************************************************/
-// this
+// Helper
+/******************************************************************************/
+
+function smartaccess(that, target, definition, ...args) {
+
+  let key = null, backingKey = null, backingValue = undefined
+
+  for (const arg of args) {
+    const isKey = typeof arg === 'string' || typeof arg === 'symbol'
+    const isFunc = arg instanceof Function
+
+    //if it's a key and a key hasn't been defined yet
+    if (isKey && key === null)
+      key = arg
+
+    //if it's a backing key and a backing key hasn't been
+    else if (isKey && backingKey === null)
+      backingKey = arg
+
+    //if it's a function and a getter hasn't been defined yet
+    else if (isFunc && !definition.get)
+      definition.get = arg
+
+    //if it's a function and a setter hasn't been defined yet
+    else if (isFunc && !definition.set)
+      definition.set = arg
+
+    //if we've gotten here, whatever value left over can be used as the backing field default value
+    else
+      backingValue = arg
+
+  }
+
+  that.property(key, definition)
+
+  if (backingKey !== null)
+    that.let(backingKey, backingValue)
+
+  //if the key and the setter were properly defined, we'll use the setter to
+  //filter the backing value, in case the setter mutates it.
+  if (key !== null && definition.set && backingKey !== null && backingValue !== null)
+    target[key] = backingValue
+
+  return that
+
+}
+
+/******************************************************************************/
+// Define Instnace
 /******************************************************************************/
 
 class Define {
 
   constructor(obj) {
 
-    if (obj instanceof Object === false && STATIC)
-      throw new TypeError('Object expected.')
+    const target = () => this === STATIC ? STATIC_TARGET : obj
 
-    if (STATIC) {
-
-      this[INSTANCE_TARGET] = obj
-      this.property = (key, definition) => {
-        defineProperty(this[INSTANCE_TARGET], key, definition)
-        return this
-      }
-
-    } else this.property = (key, definition) => {
-      defineProperty(STATIC_TARGET, key, definition)
+    this.property = (key, definition) => {
+      defineProperty(target(), key, definition)
       return this
     }
 
@@ -58,23 +95,34 @@ class Define {
     this.set.enum.config = (key, set) => this.property(key, { set, configurable, enumerable })
     this.set.config.enum = this.set.enum.config
 
-    this.access             = (key, get, set) => this.property(key, { get, set })
-    this.access.enum        = (key, get, set) => this.property(key, { get, set, enumerable })
-    this.access.config      = (key, get, set) => this.property(key, { get, set, configurable })
-    this.access.enum.config = (key, get, set) => this.property(key, { get, set, configurable, enumerable })
+    this.access             = (...args) => smartaccess(this, target(), {}, ...args)
+    this.access.enum        = (...args) => smartaccess(this, target(), { enumerable }, ...args)
+    this.access.config      = (...args) => smartaccess(this, target(), { configurable }, ...args)
+    this.access.enum.config = (...args) => smartaccess(this, target(), { enumerable, configurable }, ...args)
     this.access.config.enum = this.access.enum.config
 
+    freeze(this)
   }
 
 }
 
-STATIC = freeze(new Define())
+/******************************************************************************/
+// Create static instance
+/******************************************************************************/
+
+STATIC = new Define()
 
 /******************************************************************************/
 // Exports
 /******************************************************************************/
 
 export default function(obj) {
+
+  if (arguments.length > 1)
+    throw new Error('Define only takes a single argument.')
+
+  if (obj instanceof Object === false && STATIC)
+    throw new TypeError('Object expected.')
 
   if (this !== undefined)
     return new Define(obj || this)
