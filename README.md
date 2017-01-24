@@ -1,4 +1,4 @@
-# Define Utility
+M# Define Utility
 ___
 
 ## Why?
@@ -23,6 +23,7 @@ es6 master race:
 ```js
 import Define from 'define-utility'
 ```
+
 
 Now that it's in your project, instead of doing this:
 ```js
@@ -70,16 +71,16 @@ Also getters and setters:
 const obj = {}
 
 Define(obj)
-  .let('magnitude', 10)
-  .get('sqrMagnitude', () => Math.sqrt(obj.magnitude))
-  .set('Magnitude', m => obj.magnitude = m > 0 ? m : 0)
+  .let('sqrMagnitude', 10)
+  .get('magnitude', () => Math.sqrt(obj.magnitude))
+  .set('throttle', m => m > obj.magnitude ? obj.magnitude : m < 0 ? 0 : m)
 
 //or use .access to set both on the same property at once:
 
 Define(obj)
   .let('_mass', 1000)
   .access('mass',
-    () => obj._mass)
+    () => obj._mass,
     v => obj._mass = v > 0 ? v : 0)
 
 ```
@@ -92,21 +93,21 @@ You can use the access method to set backing fields:
   const PERCENT = Symbol('percent') //i like using symbols for backing fields
 
   Define(obj)
-    .access(
-      //first string or symbol is the field
-      'percent',
+    .access('percent', //first string or symbol is the fields
+      () => `${this[PERCENT] || 0} %`, //first function is the getter          
+      v => this[PERCENT] = v < 0 ? 0 : v > 100 ? 100 : v, //second function is the setter        
+      PERCENT, //second string or symbol is the backing field
+      50) //any value defined after will be used as the backing fields default value
 
-      //first function is the getter          
-      () => `${this[PERCENT] || 0} %`,  
-
-      //second function is the setter                
+  // Equivalent to
+  Define(obj)
+    .access('percent',
+      () => `${this[PERCENT] || 0} %`,
       v => this[PERCENT] = v < 0 ? 0 : v > 100 ? 100 : v,
+    ),
+    .let(PERCENT, 50)
 
-      //second string or symbol is the backing field
-      PERCENT,
 
-      //any value defined after will be used as the backing fields default value
-      50)
 
 ```
 
