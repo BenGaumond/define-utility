@@ -1,6 +1,6 @@
 {
   "name": "define-utility",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Improved syntax for defining special properties on objects.",
   "main": "lib",
   "devDependencies": {

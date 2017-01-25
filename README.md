@@ -1,4 +1,4 @@
-M# Define Utility
+# Define Utility
 ___
 
 ## Why?
@@ -103,8 +103,8 @@ You can use the access method to set backing fields:
   Define(obj)
     .access('percent',
       () => `${this[PERCENT] || 0} %`,
-      v => this[PERCENT] = v < 0 ? 0 : v > 100 ? 100 : v,
-    ),
+      v => this[PERCENT] = v < 0 ? 0 : v > 100 ? 100 : v
+    )
     .let(PERCENT, 50)
 
 
