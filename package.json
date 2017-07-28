@@ -1,6 +1,6 @@
 {
   "name": "define-utility",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Improved syntax for defining special properties on objects.",
   "main": "lib",
   "devDependencies": {
@@ -27,8 +27,8 @@
   },
   "homepage": "https://github.com/BenZed/define-utility#readme",
   "scripts": {
-    "build": "node_modules/.bin/babel src --out-dir lib",
-    "test": "node_modules/.bin/mocha --compilers js:babel-core/register 'test/**/*.js'",
+    "build": "rm -rf lib; babel src --out-dir lib",
+    "test": "mocha --compilers js:babel-core/register 'test/**/*.js'",
     "prepublishOnly": "npm run test && npm run build"
   },
   "keywords": [
