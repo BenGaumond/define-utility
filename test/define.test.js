@@ -6,13 +6,12 @@ import Define from '../src'
 
 describe('Define static function', () => {
 
-
-  it('Should only take a single object as a parameter', () => {
+  it('Can be called with an input or called from an input', () => {
 
     const obj = {}
 
     expect(() => Define(obj)).to.not.throw(Error)
-    expect(() => Define()).to.throw('Object expected.')
+    expect(() => obj::Define()).to.not.throw(Error)
 
   })
 
@@ -22,7 +21,7 @@ describe('Define static function', () => {
     Define(obj)
       .const('foo', 'bar')
 
-    assert(obj.foo == 'bar')
+    assert(obj.foo === 'bar')
 
   })
 
@@ -32,8 +31,8 @@ describe('Define static function', () => {
     Define(obj)
       .const('PI', Math.PI)
 
-    expect(() => obj.PI = 5).to.throw(Error)
-    assert(obj.PI == Math.PI)
+    expect(() => { obj.PI = 5 }).to.throw(Error)
+    assert(obj.PI === Math.PI)
 
   })
 
@@ -43,13 +42,13 @@ describe('Define static function', () => {
     Define(obj)
       .let('mass', 1000)
 
-    expect(() => obj.mass -= 900).to.not.throw(Error)
-    assert(obj.mass == 100)
+    expect(() => { obj.mass -= 900 }).to.not.throw(Error)
+    assert(obj.mass === 100)
 
   })
 
   it('get, set properties are supported, and access property for both. { get, set }', () => {
-    const g = {}, s = {}, a = {}, FIELD = Symbol('field')
+    const g = {}, s = {}, a = {}, FIELD = Symbol('field') // eslint-disable-line one-var
 
     let flag = false
 
@@ -57,44 +56,54 @@ describe('Define static function', () => {
       .get('five', () => 5)
 
     Define(s)
-      .set('flag', value => flag = value)
+      .set('flag', value => { flag = value })
 
     Define(a)
       .let(FIELD, 0)
-      .access('field', () => a[FIELD], value => a[FIELD] = value)
+      .access('field', () => a[FIELD], value => { a[FIELD] = value })
 
-    assert(g.five == 5)
+    assert(g.five === 5)
 
     s.flag = true
-    assert(flag == true)
+    assert(flag === true)
 
     a.field = 10
 
-    assert(a.field == 10)
-    assert(a[FIELD] == 10)
+    assert(a.field === 10)
+    assert(a[FIELD] === 10)
 
   })
 
   it('access can be used to create backing properties', () => {
 
-    const obj = {}, MASS = '_mass'//Symbol('mass')
+    const obj = {}, MASS = '_mass' // eslint-disable-line one-var
 
     Define(obj)
       .access('mass',
         () => obj[MASS],
-        v => obj[MASS] = v > 0 ? v : 0,
+        v => { obj[MASS] = v > 0 ? v : 0 },
 
         MASS,
         1000
       )
 
-    assert(obj.mass == 1000)
+    assert(obj.mass === 1000)
 
     obj.mass = 500
-    assert(obj.mass == 500)
+    assert(obj.mass === 500)
 
     obj.mass = -100
-    assert(obj.mass == 0)
+    assert(obj.mass === 0)
+
+  })
+
+  it('target property contains target', () => {
+
+    const obj = {}
+
+    const target = Define(obj).target
+
+    assert(obj === target)
 
   })
 
@@ -103,15 +112,24 @@ describe('Define static function', () => {
     const obj = {}
 
     Define(obj)
-      .const.enum('foo', 'bar')
+      .enum.const('foo', 'bar')
 
     let key = null
 
-    for(const i in obj)
+    for (const i in obj)
       key = i
 
-    assert(key == 'foo')
-    assert(obj.foo == 'bar')
+    assert(key === 'foo')
+    assert(obj.foo === 'bar')
+
+  })
+
+  it('cant enum twice', () => {
+
+    const obj = {}
+
+    expect(() => Define(obj)
+      .enum.enum.const('soft', 1000)).to.throw('Next property will already be enumerable.')
 
   })
 
@@ -121,29 +139,23 @@ describe('Define static function', () => {
 
     Define(obj)
       .const('hard', 1000)
-      .const.config('soft', 1000)
+      .config.const('soft', 1000)
 
     expect(() => delete obj.hard).to.throw(Error)
     expect(() => delete obj.soft).to.not.throw(Error)
 
   })
 
-  it('Define can be instanced to prevent scope form changing.', () => {
+  it('cant config twice', () => {
 
-    const stat = {}, dyn = {}
+    const obj = {}
 
-    const iDefine = new Define(dyn)
-
-    Define(stat)
-      .const('foo', 'bar')
-
-    iDefine
-      .const('foo', 'better')
-
-    assert(dyn.foo == 'better')
-
+    expect(() => Define(obj)
+      .config.config.const('soft', 1000)).to.throw('Next property will already be configurable.')
   })
 
-
+  it('Define cannot be instanced.', () => {
+    expect(() => new Define()).to.throw('Define cannot be instanced.')
+  })
 
 })

@@ -1,20 +1,26 @@
 {
   "name": "define-utility",
-  "version": "1.0.2",
+  "version": "2.0.1",
   "description": "Improved syntax for defining special properties on objects.",
   "main": "lib",
   "devDependencies": {
     "babel-cli": "^6.22.2",
     "babel-core": "^6.22.1",
-    "babel-eslint": "^7.0.0",
+    "babel-eslint": "^7.2.3",
     "babel-preset-es2015": "^6.22.0",
     "babel-preset-stage-0": "^6.16.0",
     "chai": "^3.5.0",
+    "eslint": "^4.1.1",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-plugin-import": "^2.6.0",
+    "eslint-plugin-node": "^5.1.0",
+    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-standard": "^3.0.1",
     "mocha": "^3.2.0"
   },
-  "repository" :{
-    "type" : "git",
-    "url" : "git+https://github.com/BenZed/define-utility"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BenZed/define-utility"
   },
   "bugs": {
     "url": "https://github.com/BenZed/define-utility/issues"
@@ -23,7 +29,7 @@
   "scripts": {
     "build": "node_modules/.bin/babel src --out-dir lib",
     "test": "node_modules/.bin/mocha --compilers js:babel-core/register 'test/**/*.js'",
-    "publish": "npm run test && npm run build"
+    "prepublishOnly": "npm run test && npm run build"
   },
   "keywords": [
     "define",

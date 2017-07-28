@@ -1,4 +1,4 @@
-# Define Utility
+# define Utility
 ___
 
 ## Why?
@@ -15,13 +15,13 @@ ___
 Filthy es5 casual:
 
 ```js
-const Define = require('define-utility');
+const define = require('define-utility');
 ```
 
 es6 master race:
 
 ```js
-import Define from 'define-utility'
+import define from 'define-utility'
 ```
 
 
@@ -37,7 +37,7 @@ You can do this:
 ```js
 const obj = {}
 
-Define(obj)
+define(obj)
   .property('foo', { value: 'bar'})
   .property('ace', { value: 'base'})
 ```
@@ -47,7 +47,7 @@ Since a property definition with just a value equates to a read-only, or constan
 ```js
 const obj = {}
 
-Define(obj)
+define(obj)
   .const('foo', 'bar')
   .const('ace', 'base')
 
@@ -58,7 +58,7 @@ Or you could define a writable property:
 ```js
 const obj = {}
 
-Define(obj)
+define(obj)
   .let('mass', 1000)
 
 obj.mass = 500
@@ -70,14 +70,14 @@ Also getters and setters:
 
 const obj = {}
 
-Define(obj)
+define(obj)
   .let('sqrMagnitude', 10)
   .get('magnitude', () => Math.sqrt(obj.magnitude))
   .set('throttle', m => m > obj.magnitude ? obj.magnitude : m < 0 ? 0 : m)
 
 //or use .access to set both on the same property at once:
 
-Define(obj)
+define(obj)
   .let('_mass', 1000)
   .access('mass',
     () => obj._mass,
@@ -92,7 +92,7 @@ You can use the access method to set backing fields:
 
   const PERCENT = Symbol('percent') //i like using symbols for backing fields
 
-  Define(obj)
+  define(obj)
     .access('percent', //first string or symbol is the fields
       () => `${this[PERCENT] || 0} %`, //first function is the getter          
       v => this[PERCENT] = v < 0 ? 0 : v > 100 ? 100 : v, //second function is the setter        
@@ -100,7 +100,7 @@ You can use the access method to set backing fields:
       50) //any value defined after will be used as the backing fields default value
 
   // Equivalent to
-  Define(obj)
+  define(obj)
     .access('percent',
       () => `${this[PERCENT] || 0} %`,
       v => this[PERCENT] = v < 0 ? 0 : v > 100 ? 100 : v
@@ -117,15 +117,15 @@ Any of the shortcuts can be made enumerable or configurable:
 
   const obj = {}
 
-  Define(obj)
+  define(obj)
     .const('id', 0) // { value: 0}
-    .const.enum('attribute', 'HEAT') // { value: 'HEAT', enumerable: true }
-    .let.enum('celsius', 32 ) // { value: 32, writable: true, enumerable: true }
-    .get.enum('fahrenheit', () => (obj.celsius * 9 + (32 * 5)) / 5) // { get: [Function], enumerable: true }
-    .const.enum.config('name', 'Thermometer') // { value: 'name', enumerable: true, configurable: true }
+    .enum.const('attribute', 'HEAT') // { value: 'HEAT', enumerable: true }
+    .enum.let('celsius', 32 ) // { value: 32, writable: true, enumerable: true }
+    .enum.get('fahrenheit', () => (obj.celsius * 9 + (32 * 5)) / 5) // { get: [Function], enumerable: true }
+    .enum.config.const('name', 'Thermometer') // { value: 'name', enumerable: true, configurable: true }
 
   // you CAN also do
-    .let.config.enum('place', 'Ocean') // { value: 'Ocean', writable: true, configurable: true, enumerable: true }
+    .config.enum.let('place', 'Ocean') // { value: 'Ocean', writable: true, configurable: true, enumerable: true }
 
   // but that's the same as
   obj.place = 'Ocean'
@@ -135,7 +135,7 @@ Any of the shortcuts can be made enumerable or configurable:
 
 ## Class properties
 
-Define works great for classes:
+define works great for classes:
 
 ```js
 
@@ -145,18 +145,18 @@ class Vector {
 
   constructor(initialX = 0, initialY = 0) {
 
-    Define(this)
-      .access.enum('x', X, () => this[X], v => this[X] = isFinite(v) ? v : this[X], initialX)
-      .access.enum('y', Y, () => this[Y], v => this[Y] = isFinite(v) ? v : this[Y], initialY)
-      .get.enum('magnitude', () => Math.sqrt(this.x ** 2, this.y ** 2))
-      .get.enum('angle', () => Math.atan2(this.y, this.x) * 180 / Math.PI)
+    define(this)
+      .enum.access('x', X, () => this[X], v => this[X] = isFinite(v) ? v : this[X], initialX)
+      .enum.access('y', Y, () => this[Y], v => this[Y] = isFinite(v) ? v : this[Y], initialY)
+      .enum.get('magnitude', () => Math.sqrt(this.x ** 2, this.y ** 2))
+      .enum.get('angle', () => Math.atan2(this.y, this.x) * 180 / Math.PI)
 
   }
 
   //why not use the standard getter syntax?
   //I generally always do, but the descriptor for a standard getter
   //is { get: [Function], set: undefined, enumerable: false, configurable: true }
-  //so, if you'd like different modifiers than that, use Define()
+  //so, if you'd like different modifiers than that, use define()
   get xPlusY() {
     return this.x + this.y
   }
@@ -175,55 +175,58 @@ You can define accessors on the prototype of a class, as well, just make sure yo
   class Person {
     constructor(first, last, age) {
 
-      Define(this)
+      define(this)
         .const('first', first)
         .const('last', last)
-        .let.enum('age', age)
+        .enum .let('age', age)
 
     }
   }
 
-  Define(Person.prototype)
+  define(Person.prototype)
     //function(){} expression required here
     .get.enum('fullName', function() { return this.first + ' ' + this.last })
 ```
 
 ## Special Considerations
 
-Define is generally used as a static function, but it does maintain an internal state;
-the object it's making definitions on. As a result, the internal state changes every time
-you call define:
+Use the target property if you're defining a brand new object
 
 ```js
 
-const one = {}, two = {}
+const obj = define({})
+  .enum.const('foo', 'bar')
+  .target
 
-const oneDefine = Define(one)
+console.log(obj.foo) // bar
 
-oneDefine.const('prop', 'value') //one.prop === 'value'
+```
+If you don't provide an input, define will create a new Object that doesn't inherit from anything
 
-Define(two)
+```js
 
-oneDefine.const('foo', 'bar') //two.foo === 'bar'
+const obj = define().target
+
+// Equivalent to
+
+const Obj = Object.create(null)
 
 ```
 
-For most cases, this doesn't matter because you're generally only going to be making
-definitions synchronously inside the constructor of an object, by chaining .statments.
-
-HOWEVER; If you'd like to cache a Define interface, for whatever reason, and be safe
-from worries of asynchronous code or use of generators, you can create an instance:
+If you like the :: function.bind operator, define can be used with it.
 
 ```js
 
-  const one = {}, two = {}
+  const one = {}
 
-  const oneDefine = new Define(one)
+  one::define() // == define(one)
 
-  Define(two)
-    .let('cool', true) // two.cool = true
+```
 
-  oneDefine
-    .let('badass', true) // one.badass = true
+Define cannot be instanced.
+
+```js
+
+new define() // throws error
 
 ```
